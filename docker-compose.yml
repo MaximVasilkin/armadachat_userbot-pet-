@@ -1,0 +1,18 @@
+version: '3.9'
+
+networks:
+  backend:
+
+services:
+  inok_bot:
+    build: .
+    container_name: inok
+    env_file:
+      - .env
+    volumes:
+      - ./app/dump/:/home/myuser/app/dump/:rw
+    user: myuser
+    restart: always
+    networks:
+      - backend
+
