@@ -243,16 +243,15 @@ class Bot:
     def send(self, user_id, text, color=TextColor.blue, private=False, expression='0', room_id=None):
         params = {'rm': room_id or self.current_room_id}
 
-        if private:
-            res = self.session.get(f'{self.base_url}/inside.php', params=params | {'nk': user_id})
+        res = self.session.get(f'{self.base_url}/inside.php', params=params | {'nk': user_id})
 
-            form = BeautifulSoup(res.text, 'html.parser').find('form')
-            if form is None:  # ignored
-                return
+        form = BeautifulSoup(res.text, 'html.parser').find('form')
+        if form is None:  # ignored
+            return
 
-            post_url = form.attrs['action']
-            ref = post_url.split('=')[-1]
-            params['ref'] = ref
+        post_url = form.attrs['action']
+        ref = post_url.split('=')[-1]
+        params['ref'] = ref
 
         data = {'towhom': user_id,
                 'msg': text,
@@ -295,12 +294,12 @@ class Bot:
 
     def polling(self):
         while True:
-            time.sleep(1)
+            time.sleep(5)
             try:
                 new_messages = self.get_new_messages()
 
                 for message in new_messages:
-                    time.sleep(2)
+                    time.sleep(5)
                     for filtrs, func in self.router.handlers:
                         if not filtrs or all([f(message) for f in filtrs]):
 
