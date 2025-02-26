@@ -1,3 +1,4 @@
+import logging
 import random
 from random import choice
 from bs4 import BeautifulSoup
@@ -42,7 +43,7 @@ def ai_chat(user_chat_history: str) -> str:
             return msg
         except:
             sleep(i)
-            continue
+            logging.exception('G4F error')
     return '...у меня говорилка отвалилась, извините'
 
 

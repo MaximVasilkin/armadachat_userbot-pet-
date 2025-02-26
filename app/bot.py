@@ -13,25 +13,16 @@ from requests.adapters import HTTPAdapter
 import logging
 
 
-# class TimeoutHTTPAdapter(HTTPAdapter):
-#     def __init__(self, *args, **kwargs):
-#         self.timeout = kwargs.pop("timeout")
-#         super().__init__(*args, **kwargs)
-#
-#     def send(self, request, **kwargs):
-#         timeout = kwargs.get("timeout")
-#         if timeout is None:
-#             kwargs["timeout"] = self.timeout
-#         return super().send(request, **kwargs)
-#
-# # Define a global timeout value in seconds
-# GLOBAL_TIMEOUT = 5  # Example: 5 seconds
-#
-# # Create a session with the custom adapter
-# session = requests.Session()
-# adapter = TimeoutHTTPAdapter(timeout=GLOBAL_TIMEOUT)
-# session.mount("http://", adapter)
-# session.mount("https://", adapter)
+class TimeoutHTTPAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        self.timeout = kwargs.pop('timeout')
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        timeout = kwargs.get('timeout')
+        if timeout is None:
+            kwargs['timeout'] = self.timeout
+        return super().send(request, **kwargs)
 
 
 class TextColor:
@@ -58,7 +49,7 @@ class Message:
                (other.room_id, other.user_id, other.is_private, other.text, other.date)
 
     def is_new(self) -> bool:
-        return self not in self.bot.db[self.room_id]
+        return (self.nickname != self.bot.login) and (self not in self.bot.db[self.room_id])
 
     def mark_as_read(self):
         self.bot.db[self.room_id].append(self)
@@ -344,10 +335,13 @@ def start_bot(base_url, login, password, room, admins, post_every_min=30, contex
     with requests.Session() as session:
         retries = Retry(
             total=5,
-            backoff_factor=2,
+            backoff_factor=1,
             status_forcelist=list(range(400, 550)),
             allowed_methods={'POST', 'GET'},
         )
+        timeout_adapter = TimeoutHTTPAdapter(timeout=60)
+        session.mount('http://', timeout_adapter)
+        session.mount('https://', timeout_adapter)
         session.mount('https://', HTTPAdapter(max_retries=retries))
         session.mount('http://', HTTPAdapter(max_retries=retries))
 

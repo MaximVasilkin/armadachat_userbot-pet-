@@ -7,9 +7,10 @@ RUN adduser myuser -D
 WORKDIR /home/myuser/app
 COPY ./app .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 RUN chown -R myuser:myuser /home/myuser/app
+RUN chmod -R 777 /home/myuser/app
 
 USER myuser
 
