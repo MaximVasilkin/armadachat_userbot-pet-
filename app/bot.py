@@ -111,6 +111,7 @@ class Bot:
         self.context = self.load_context()
         self.current_room_id = self.load_last_room() or allowed_rooms[0]
         self.last_message = self.load_last_message()
+        self.users = self.load_users()
         self.admins = set(map(str, admins))
 
     def load_db(self):
@@ -127,6 +128,13 @@ class Bot:
     def save_db(self):
         db = {k: list(map(lambda x: x.to_dict(), v)) for k, v in self.db.items()}
         return save_data('./dump/db.pickle', db)
+
+    def load_users(self):
+        users = load_data('./dump/users.pickle')
+        return users or {}
+
+    def save_users(self):
+        return save_data('./dump/users.pickle', self.users)
 
     def load_context(self):
         context = load_data('./dump/context.pickle')
@@ -244,10 +252,16 @@ class Bot:
         params = {'rm': room_id or self.current_room_id}
 
         res = self.session.get(f'{self.base_url}/inside.php', params=params | {'nk': user_id})
-
-        form = BeautifulSoup(res.text, 'html.parser').find('form')
+        soup = BeautifulSoup(res.text, 'html.parser')
+        form = soup.find('form')
         if form is None:  # ignored
             return
+
+        nick = soup.find(id='head').text
+        profile_info = soup.find(class_='left').text.split('--~~~--')[0]
+        profile_info = f'-Ник: {nick}\n{profile_info}'
+        self.users[user_id] = profile_info  # сохраняем актуальную анкету пользователя
+        self.save_users()
 
         post_url = form.attrs['action']
         ref = post_url.split('=')[-1]

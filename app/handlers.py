@@ -56,8 +56,10 @@ def ai_talk(message):
     bot = message.bot
     context = bot.context[message.user_id]
     context.append({'role': 'user', 'content': message.text})
-    answer = gemini_ai(context)
+    about_me = bot.users.get(message.user_id, 'null')
+    answer = gemini_ai(context, about_me=about_me)
     context.append({'role': 'assistant', 'content': answer})
     bot.save_context()
-    return answer.replace('а', 'a').replace('х', 'x').replace('у', 'y').replace('е', 'e').replace('р', 'p').replace('о', 'o')
+    trans_table = str.maketrans('аоеурх', 'aoeypx')  # обход фильтра на мат, замена латиницей
+    return answer.translate(trans_table)
 

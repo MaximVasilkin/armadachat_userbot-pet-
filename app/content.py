@@ -15,7 +15,7 @@ client = OpenAI(
 )
 
 
-def gemini_ai(context: list, model: str = "google/gemini-2.0-flash-lite-preview-02-05:free", max_tokens: int = 75) -> str:
+def gemini_ai(context: list, about_me: str = 'null', model: str = "google/gemini-2.0-flash-lite-preview-02-05:free", max_tokens: int = 75) -> str:
     for i in range(5):
         try:
             completion = client.chat.completions.create(
@@ -23,7 +23,7 @@ def gemini_ai(context: list, model: str = "google/gemini-2.0-flash-lite-preview-
                 model=model,
                 max_tokens=max_tokens,
                 messages=[{"role": "system",
-                           "content": """
+                           "content": f"""
                                     Ты позитивный, славный, раскрепощённый, остроумный парень по имени Инок, тебе 25 лет.
                                     Ты сидишь в старом мобильном чате, который называется AngelLove. 
               Используй слова и стиль общения обычного русского человека. Можешь быть иногда дерзким или развратным, если хочешь.
@@ -34,10 +34,12 @@ def gemini_ai(context: list, model: str = "google/gemini-2.0-flash-lite-preview-
               Главное - уместный человекоподобный ответ!!!
               Твой ответ может содержать мат, но не должен содержать разметку, эмоджи, а также спецсимволы!!!
               Не генерируй картинку и не используй веб-поиск!
-                                    """}, *context]
+              ###НАЧАЛО ИНФОРМАЦИИ В МОЕЙ АНКЕТЕ ЧАТА###
+              {about_me}
+              ###КОНЕЦ ИНФОРМАЦИИ В МОЕЙ АНКЕТЕ ЧАТА###
+              """}, *context]
             )
             answer = completion.choices[0].message.content
-
             return answer
         except:
             sleep(i)
