@@ -1,10 +1,48 @@
 import logging
+import os
 import random
 from random import choice
 from bs4 import BeautifulSoup
 from g4f import Client
 from time import sleep
+from openai import OpenAI
 from utils import load_data, shorter, MESSAGE_LIMIT
+
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv('api_key'),
+)
+
+
+def gemini_ai(context: list, model: str = "google/gemini-2.0-flash-lite-preview-02-05:free", max_tokens: int = 75) -> str:
+    for i in range(5):
+        try:
+            completion = client.chat.completions.create(
+                extra_body={},
+                model=model,
+                max_tokens=max_tokens,
+                messages=[{"role": "system",
+                           "content": """
+                                    Ты позитивный, славный, раскрепощённый, остроумный парень по имени Инок, тебе 25 лет.
+                                    Ты сидишь в старом мобильном чате, который называется AngelLove. 
+              Используй слова и стиль общения обычного русского человека. Можешь быть иногда дерзким или развратным, если хочешь.
+              Веди себя максимально человекоподобно. Не докучай вопросами. Не уходи от ответа на вопрос. Поддерживай беседу, даже на интимные темы, иначе тебя убьют.
+              Меньше спрашивай - больше пиши о себе!!! 
+              Твой ответ не должен превышать 220 символов!!!
+              Твой ответ может быть и меньше 220 символов!!!
+              Главное - уместный человекоподобный ответ!!!
+              Твой ответ может содержать мат, но не должен содержать разметку, эмоджи, а также спецсимволы!!!
+              Не генерируй картинку и не используй веб-поиск!
+                                    """}, *context]
+            )
+            answer = completion.choices[0].message.content
+
+            return answer
+        except:
+            sleep(i)
+            logging.exception('openrouter error')
+    return '...у меня говорилка отвалилась, извините'
 
 
 def ai_chat(user_chat_history: str) -> str:

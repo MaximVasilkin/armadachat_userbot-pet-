@@ -1,4 +1,4 @@
-from content import ai_chat, get_sandwich, get_horo, get_cookie_fortune, ZODIACS
+from content import ai_chat, get_sandwich, get_horo, get_cookie_fortune, ZODIACS, gemini_ai
 
 
 class Router:
@@ -55,10 +55,9 @@ def change_room(message):
 def ai_talk(message):
     bot = message.bot
     context = bot.context[message.user_id]
-    context.append(f'- Я: {message.text}')
-    context_text = '\n'.join(context)
-    answer = ai_chat(context_text)
-    context.append(f'- Ты: {answer}')
+    context.append({'role': 'user', 'content': message.text})
+    answer = gemini_ai(context)
+    context.append({'role': 'assistant', 'content': answer})
     bot.save_context()
-    return answer
+    return answer.replace('а', 'a').replace('х', 'x').replace('у', 'y').replace('е', 'e').replace('р', 'p').replace('о', 'o')
 

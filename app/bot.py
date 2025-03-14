@@ -54,7 +54,7 @@ class Message:
     def mark_as_read(self):
         self.bot.db[self.room_id].append(self)
 
-    def answer(self, text, color=TextColor.blue, expression='0', private=None):
+    def answer(self, text, color=TextColor.black, expression='0', private=None):
         if private is None:
             private = self.is_private
         self.bot.smart_send(self.user_id, text, color=color, private=private, expression=expression, room_id=self.room_id)
@@ -240,7 +240,7 @@ class Bot:
             return wrapper
         return decorator
 
-    def send(self, user_id, text, color=TextColor.blue, private=False, expression='0', room_id=None):
+    def send(self, user_id, text, color=TextColor.black, private=False, expression='0', room_id=None):
         params = {'rm': room_id or self.current_room_id}
 
         res = self.session.get(f'{self.base_url}/inside.php', params=params | {'nk': user_id})
