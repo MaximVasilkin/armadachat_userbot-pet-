@@ -113,6 +113,7 @@ class Bot:
         self.last_message = self.load_last_message()
         self.users = self.load_users()
         self.admins = set(map(str, admins))
+        self.room_context = ''
 
     def load_db(self):
         db = load_data('./dump/db.pickle')
@@ -182,15 +183,24 @@ class Bot:
     #     res = self.session.get(f'{self.base_url}/exit.php')
     #     print(res.text)
 
-    def _get_messages(self, room_id):
-        params = {'rm': room_id,
-                  'mod': 'filtr_lmsg'}
+    def _get_messages(self, room_id, filtr=True):
+        params = {'rm': room_id}
+        if filtr:
+            params.update({'mod': 'filtr_lmsg'})
+
         res = self.session.get(f'{self.base_url}/chat.php', params=params)
         soup = BeautifulSoup(res.text, features='html.parser')
         main_screen = soup.find(class_='body')
         posts = main_screen.find_all(class_='left')
         posts.reverse()
         return posts
+
+    def get_room_context(self) -> str:
+        posts = self._get_messages(self.current_room_id, filtr=False)
+        if posts:
+            border = '---------------'
+            return f'{border}\n' + '\n'.join(f'{p.text}\n{border}' for p in posts)
+        return 'null'
 
     def get_messages(self, room_id=None) -> list[Message, ...]:
         room_id = room_id or self.current_room_id
@@ -311,6 +321,7 @@ class Bot:
             time.sleep(5)
             try:
                 new_messages = self.get_new_messages()
+                self.room_context = self.get_room_context()
 
                 for message in new_messages:
                     time.sleep(5)

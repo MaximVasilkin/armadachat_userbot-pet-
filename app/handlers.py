@@ -1,4 +1,4 @@
-from content import ai_chat, get_sandwich, get_horo, get_cookie_fortune, ZODIACS, gemini_ai
+from content import get_sandwich, get_horo, get_cookie_fortune, ZODIACS, gemini_ai
 
 
 class Router:
@@ -57,7 +57,7 @@ def ai_talk(message):
     context = bot.context[message.user_id]
     context.append({'role': 'user', 'content': message.text})
     about_me = bot.users.get(message.user_id, 'null')
-    answer = gemini_ai(context, about_me=about_me)
+    answer = gemini_ai(context, about_me=about_me, room_context=bot.room_context)
     context.append({'role': 'assistant', 'content': answer})
     bot.save_context()
     trans_table = str.maketrans('аоеурх', 'aoeypx')  # обход фильтра на мат, замена латиницей
