@@ -1,3 +1,4 @@
+import os
 import time
 from itertools import cycle
 from threading import Thread
@@ -7,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from content import get_quote, get_fact
 from handlers import router
+from tokens import Token
 from utils import load_data, save_data, clean_text, MESSAGE_LIMIT, text_spliter
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
@@ -27,7 +29,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
 class TextColor:
     blue = '2'
-    black = '1'
+    black = '0'
     green = '3'
     brown = '4'
 
@@ -114,6 +116,7 @@ class Bot:
         self.users = self.load_users()
         self.admins = set(map(str, admins))
         self.room_context = ''
+        self.tokens = self.load_tokens()
 
     def load_db(self):
         db = load_data('./dump/db.pickle')
@@ -170,6 +173,12 @@ class Bot:
                 return int(f.read())
         except FileNotFoundError:
             return
+
+    def load_tokens(self):
+        return load_data('./dump/tokens.pickle') or [Token(t) for t in os.getenv('tokens').split(',')]
+
+    def save_tokens(self):
+        save_data('./dump/tokens.pickle', self.tokens)
 
     def log_in(self):
         self.session.headers.update(self.headers)

@@ -1,4 +1,8 @@
+import logging
+from time import sleep
+from openai import OpenAI
 from content import get_sandwich, get_horo, get_cookie_fortune, ZODIACS, gemini_ai
+from tokens import get_token
 
 
 class Router:
@@ -57,7 +61,20 @@ def ai_talk(message):
     context = bot.context[message.user_id]
     context.append({'role': 'user', 'content': message.text})
     about_me = bot.users.get(message.user_id, 'null')
-    answer = gemini_ai(context, about_me=about_me, room_context=bot.room_context)
+    answer = '...Извините, говорилка отвалилась.'
+    for try_ in range(5):
+        try:
+            token = get_token(bot.tokens)
+            bot.save_tokens()
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=token,
+            )
+            answer = gemini_ai(client, context, about_me=about_me, room_context=bot.room_context)
+            break
+        except:
+            sleep(try_ * 3)
+            logging.exception('openrouter error')
     context.append({'role': 'assistant', 'content': answer})
     bot.save_context()
     trans_table = str.maketrans('аоеурх', 'aoeypx')  # обход фильтра на мат, замена латиницей
